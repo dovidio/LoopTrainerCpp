@@ -1,6 +1,6 @@
 #include "MainComponent.h"
 
-namespace AudioApp
+namespace LoopTrainer
 {
 MainComponent::MainComponent()
 {

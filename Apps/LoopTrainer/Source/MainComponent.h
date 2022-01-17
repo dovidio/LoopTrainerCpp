@@ -8,6 +8,7 @@ class MainComponent : public juce::AudioAppComponent
 {
 public:
     MainComponent();
+    ~MainComponent();
 
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
     void releaseResources() override;
@@ -17,11 +18,19 @@ public:
     void resized() override;
 
 private:
-    juce::AudioDeviceSelectorComponent selector {
-        deviceManager, 2, 2, 2, 2, false, false, true, false};
-    WhiteNoise::Oscillator noise;
+
+    juce::TextButton openButton;
+    juce::TextButton playButton;
+    juce::TextButton pauseButton;
+
+    std::unique_ptr<juce::FileChooser> fileChooser;
+    juce::AudioFormatManager formatManager;
+    juce::AudioTransportSource audioTransportSource;
+    std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
+    juce::FlexItem buildButton(juce::Button& button);
+    void openFileChooser();
 };
 
 } // namespace LoopTrainer
