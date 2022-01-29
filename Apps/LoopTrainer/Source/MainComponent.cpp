@@ -10,8 +10,13 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(toolbar);
     toolbar.onOpenButtonClicked = [this] { openFileChooser(); };
-    toolbar.onPlayButtonClicked = [this] { audioTransportSource.start(); };
-    toolbar.onPauseButtonClicked = [this] { audioTransportSource.stop(); };
+    toolbar.onPlayButtonClicked = [this] {
+        if (toolbar.isPlaying()) {
+            audioTransportSource.start();
+        } else {
+            audioTransportSource.stop();
+        }
+    };
     toolbar.onStopButtonClicked = [this] {
         audioTransportSource.stop();
         audioTransportSource.setPosition(0);
@@ -94,14 +99,18 @@ void MainComponent::openFileChooser()
 
                                  if (file != juce::File{}) {
                                      auto* reader = formatManager.createReaderFor(file);
-
+                                     
                                      if (reader != nullptr) {
+                                         auto metadata = reader->metadataValues;
                                          auto source = std::make_unique<juce::AudioFormatReaderSource>(reader, true);
 
                                          audioTransportSource.setSource(source.get(), 0, nullptr, reader->sampleRate);
 
                                          fileNavigator.setSource(file);
                                          readerSource.reset(source.release());
+                                         
+                                         toolbar.setFileName(file.getFileName());
+                                         toolbar.setTotalLength(audioTransportSource.getTotalLength());
                                      }
                                  }
                              });
