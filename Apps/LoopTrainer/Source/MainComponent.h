@@ -34,7 +34,6 @@ private:
     juce::AudioTransportSource audioTransportSource;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
 
-    juce::FlexItem buildButton(juce::Button& button);
     void openFileChooser();
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)

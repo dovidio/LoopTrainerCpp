@@ -17,9 +17,13 @@ MainComponent::MainComponent()
         audioTransportSource.setPosition(0);
         fileNavigator.setPosition(0);
     };
+    toolbar.onLoopButtonClicked = [this] {
+        fileNavigator.setLoopSelectorVisibility(toolbar.isLoopEnabled());
+    };
 
     addAndMakeVisible(fileNavigator);
     fileNavigator.addMouseListener(this, true);
+    fileNavigator.setLoopSelectorVisibility(false);
 
     formatManager.registerBasicFormats();
     
@@ -41,11 +45,6 @@ void MainComponent::resized()
 {
    toolbar.setBounds(juce::Rectangle<int>(0, 0, getWidth(), 40.0f));
    fileNavigator.setBounds(juce::Rectangle<int>(0, toolbar.getBottom() + 20, getWidth(), 160.0f));
-}
-
-juce::FlexItem MainComponent::buildButton(juce::Button& button)
-{
-    return juce::FlexItem(button).withMinWidth(80.0f).withMinHeight(30.0f).withMargin(5.0f);
 }
 
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
@@ -106,8 +105,14 @@ void MainComponent::timerCallback()
         auto audioLength = audioTransportSource.getLengthInSeconds();
         auto audioPosition = audioTransportSource.getCurrentPosition();
         auto progress = audioPosition / audioLength;
-        
-        fileNavigator.setPosition(progress);
+
+        if (progress >= fileNavigator.loopEnd()) {
+            auto loopStart = fileNavigator.loopStart();
+            audioTransportSource.setPosition(loopStart * audioLength);
+            fileNavigator.setPosition(loopStart);
+        } else {
+            fileNavigator.setPosition(progress);
+        }
     }
 }
 

@@ -24,6 +24,12 @@ Toolbar::Toolbar()
     addAndMakeVisible(stopButton);
     stopButton.setButtonText("Stop");
     stopButton.onClick = [this] { onStopButtonClicked(); };
+    
+    addAndMakeVisible(loopButton);
+    loopButton.setButtonText("Loop");
+    loopButton.setClickingTogglesState(true);
+    loopButton.setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colours::darkorange);
+    loopButton.onClick = [this] { onLoopButtonClicked(); };
 }
 
 void Toolbar::resized()
@@ -36,6 +42,7 @@ void Toolbar::resized()
     flexBox.items.add(buildButton(playButton));
     flexBox.items.add(buildButton(pauseButton));
     flexBox.items.add(buildButton(stopButton));
+    flexBox.items.add(buildButton(loopButton));
 
     flexBox.performLayout(getLocalBounds());
 }
@@ -45,5 +52,9 @@ juce::FlexItem Toolbar::buildButton(juce::Button& button)
     return juce::FlexItem(button).withMinWidth(80.0f).withMinHeight(30.0f).withMargin(5.0f);
 }
 
+bool Toolbar::isLoopEnabled()
+{
+    return loopButton.getToggleState();
+}
 
 }
