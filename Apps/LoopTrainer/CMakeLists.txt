@@ -8,7 +8,9 @@ juce_generate_juce_header(${TargetName})
 target_sources(${TargetName} PRIVATE
         Source/Main.cpp
         Source/MainComponent.cpp
-        Source/MainWindow.cpp)
+        Source/MainWindow.cpp
+        Source/Toolbar.cpp
+        Source/FileNavigator.cpp)
 
 target_compile_definitions(${TargetName} PRIVATE
         JUCE_WEB_BROWSER=0

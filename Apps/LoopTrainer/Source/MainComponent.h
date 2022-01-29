@@ -1,6 +1,8 @@
 #pragma once
 
 #include "CommonHeader.h"
+#include "Toolbar.h"
+#include "FileNavigator.h"
 
 namespace LoopTrainer
 {
@@ -19,9 +21,8 @@ public:
 
 private:
 
-    juce::TextButton openButton;
-    juce::TextButton playButton;
-    juce::TextButton pauseButton;
+    Toolbar toolbar;
+    FileNavigator fileNavigator;
 
     std::unique_ptr<juce::FileChooser> fileChooser;
     juce::AudioFormatManager formatManager;

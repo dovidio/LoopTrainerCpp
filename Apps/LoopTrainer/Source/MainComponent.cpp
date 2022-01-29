@@ -3,21 +3,17 @@
 namespace LoopTrainer
 {
 MainComponent::MainComponent()
+: fileNavigator(formatManager)
 {
     setAudioChannels(0,2);
     setSize(600, 400);
 
-    addAndMakeVisible(openButton);
-    openButton.setButtonText("Open");
-    openButton.onClick = [this] { openFileChooser(); };
+    addAndMakeVisible(toolbar);
+    toolbar.onOpenButtonClicked = [this] { openFileChooser(); };
+    toolbar.onPlayButtonClicked = [this] { audioTransportSource.start(); };
+    toolbar.onPauseButtonClicked = [this] { audioTransportSource.stop(); };
 
-    addAndMakeVisible(playButton);
-    playButton.setButtonText("Play");
-    playButton.onClick = [this] { audioTransportSource.start(); };
-
-    addAndMakeVisible(pauseButton);
-    pauseButton.setButtonText("Pause");
-    pauseButton.onClick = [this] { audioTransportSource.stop(); };
+    addAndMakeVisible(fileNavigator);
 
     formatManager.registerBasicFormats();
 }
@@ -25,6 +21,7 @@ MainComponent::MainComponent()
 MainComponent::~MainComponent() noexcept
 {
     shutdownAudio();
+    audioTransportSource.setSource(nullptr);
 }
 
 void MainComponent::paint(Graphics& g)
@@ -34,15 +31,8 @@ void MainComponent::paint(Graphics& g)
 
 void MainComponent::resized()
 {
-    juce::FlexBox flexBox;
-    flexBox.justifyContent = juce::FlexBox::JustifyContent::center;
-    flexBox.alignContent = juce::FlexBox::AlignContent::flexStart;
-
-    flexBox.items.add(buildButton(openButton));
-    flexBox.items.add(buildButton(playButton));
-    flexBox.items.add(buildButton(pauseButton));
-
-    flexBox.performLayout(juce::Rectangle<int>(0, 0, getWidth(), 40.0f));
+   toolbar.setBounds(juce::Rectangle<int>(0, 0, getWidth(), 40.0f));
+   fileNavigator.setBounds(juce::Rectangle<int>(0, toolbar.getBottom() + 20, getWidth(), 120.0f));
 }
 
 juce::FlexItem MainComponent::buildButton(juce::Button& button)
@@ -57,7 +47,9 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
 
 void MainComponent::releaseResources()
 {
+
     audioTransportSource.releaseResources();
+    
 }
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
@@ -92,10 +84,10 @@ void MainComponent::openFileChooser()
 
                                          audioTransportSource.setSource(source.get(), 0, nullptr, reader->sampleRate);
 
+                                         fileNavigator.setSource(file);
                                          readerSource.reset(source.release());
                                      }
                                  }
-
                              });
 
 }
