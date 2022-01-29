@@ -3,6 +3,7 @@
 #include "CommonHeader.h"
 #include "Toolbar.h"
 #include "FileNavigator.h"
+#include "rubberband/RubberBandStretcher.h"
 
 namespace LoopTrainer
 {
@@ -33,8 +34,10 @@ private:
     juce::AudioFormatManager formatManager;
     juce::AudioTransportSource audioTransportSource;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
+    std::unique_ptr<RubberBand::RubberBandStretcher> stretcher;
 
     void openFileChooser();
+    void updatePlaybackSpeed(double);
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };

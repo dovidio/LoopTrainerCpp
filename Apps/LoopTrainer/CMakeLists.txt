@@ -24,3 +24,45 @@ target_link_libraries(${TargetName} PRIVATE
         juce::juce_recommended_warning_flags
         juce::juce_gui_basics
         shared_processing_code)
+
+#Fetching Rubberband from git
+CPMAddPackage(
+        NAME rubberband
+        GITHUB_REPOSITORY breakfastquay/rubberband
+        GIT_TAG v2.0.0
+        DOWNLOAD_ONLY YES
+)
+
+find_library(RUBBERBAND rubberband)
+
+if (NOT RUBBERBAND)
+    if (rubberband_ADDED)
+        # Rubberband has no cmake support
+        # need to be build with meson and ninja
+        execute_process(
+                COMMAND meson build
+                WORKING_DIRECTORY ${rubberband_SOURCE_DIR}
+                RESULT_VARIABLE MESON_RESULT)
+
+        execute_process(
+                COMMAND ninja -C build
+                WORKING_DIRECTORY ${rubberband_SOURCE_DIR}
+                RESULT_VARIABLE NINJA_RESULT
+        )
+
+        if(NOT MESON_RESULT EQUAL "0" AND NOT NINJA_RESULT EQUAL "0")
+            message(FATAL_ERROR "rubberband build has failed with  ${RUBBERBAND_RESULT}")
+        endif()
+
+        find_library(RUBBERBAND
+                     NAMES rubberband
+                     PATHS "${rubberband_SOURCE_DIR}/build")
+
+        if (NOT RUBBERBAND)
+            message(FATAL_ERROR "rubberband was not found")
+        endif()
+    endif()
+endif()
+
+target_link_libraries(${TargetName} PRIVATE ${RUBBERBAND})
+target_include_directories(${TargetName} PRIVATE ${rubberband_SOURCE_DIR})

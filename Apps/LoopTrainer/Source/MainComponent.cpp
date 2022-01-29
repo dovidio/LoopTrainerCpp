@@ -20,6 +20,9 @@ MainComponent::MainComponent()
     toolbar.onLoopButtonClicked = [this] {
         fileNavigator.setLoopSelectorVisibility(toolbar.isLoopEnabled());
     };
+    toolbar.onSliderValueChange = [this](double value) {
+        updatePlaybackSpeed(value);
+    };
 
     addAndMakeVisible(fileNavigator);
     fileNavigator.addMouseListener(this, true);
@@ -43,13 +46,14 @@ void MainComponent::paint(Graphics& g)
 
 void MainComponent::resized()
 {
-   toolbar.setBounds(juce::Rectangle<int>(0, 0, getWidth(), 40.0f));
+   toolbar.setBounds(juce::Rectangle<int>(0, 0, getWidth(), 160.0f));
    fileNavigator.setBounds(juce::Rectangle<int>(0, toolbar.getBottom() + 20, getWidth(), 160.0f));
 }
 
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
     audioTransportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
+    stretcher = std::make_unique<RubberBand::RubberBandStretcher>(sampleRate, 2, RubberBand::RubberBandStretcher::Option::OptionProcessRealTime, 2.0, 1.0);
 }
 
 void MainComponent::releaseResources()
@@ -59,13 +63,20 @@ void MainComponent::releaseResources()
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
-
     if (readerSource.get() == nullptr) {
         bufferToFill.clearActiveBufferRegion();
         return;
     }
 
-    audioTransportSource.getNextAudioBlock(bufferToFill);
+    auto samplesNeeded = bufferToFill.numSamples;
+    auto samplesAvailable = stretcher->available();
+    while (samplesAvailable < samplesNeeded)
+    {
+        audioTransportSource.getNextAudioBlock(bufferToFill);
+        stretcher->process(bufferToFill.buffer->getArrayOfReadPointers(), bufferToFill.numSamples, false);
+        samplesAvailable = stretcher->available();
+    }
+    stretcher->retrieve(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.numSamples);
 }
 
 void MainComponent::openFileChooser()
@@ -125,6 +136,12 @@ void MainComponent::mouseUp(const juce::MouseEvent& event)
         audioTransportSource.setPosition(audioPosition);
         fileNavigator.setPosition(normalisedProgress);
     }
+}
+
+void MainComponent::updatePlaybackSpeed(double playbackSpeed)
+{
+    auto timeRatio = 1.0 / (playbackSpeed / 100.0);
+    stretcher->setTimeRatio(timeRatio);
 }
 
 }
