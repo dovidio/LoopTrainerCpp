@@ -7,14 +7,17 @@
 namespace LoopTrainer
 {
 
-FileNavigator::FileNavigator(juce::AudioFormatManager& audioFormatManager):
-    audioThumbnailCache(5),
-    thumbnail(512, audioFormatManager, audioThumbnailCache)
+/*
+ * THUMBNAIL IMPLEMENTATION
+ */
+ThumbnailComponent::ThumbnailComponent(juce::AudioFormatManager& audioFormatManager):
+    thumbnailCache(5),
+thumbnail(512, audioFormatManager, thumbnailCache)
 {
     thumbnail.addChangeListener(this);
 }
 
-void FileNavigator::paint(juce::Graphics& g)
+void ThumbnailComponent::paint(juce::Graphics& g)
 {
     g.setColour(juce::Colours::darkgrey);
     g.fillRect(getLocalBounds());
@@ -26,16 +29,60 @@ void FileNavigator::paint(juce::Graphics& g)
     }
 }
 
-void FileNavigator::setSource(juce::File& file)
+void ThumbnailComponent::setSource(juce::File& file)
 {
     thumbnail.setSource(new juce::FileInputSource(file));
 }
 
-void FileNavigator::changeListenerCallback(juce::ChangeBroadcaster* source)
+void ThumbnailComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
 {
     if (source == &thumbnail)
     {
         repaint();
     }
+}
+
+/*
+ * MARKER IMPLEMENTATION
+ */
+Marker::Marker() {}
+void Marker::paint(juce::Graphics &g)
+{
+    g.setColour(juce::Colours::green);
+    auto initialX = juce::roundToInt(position * getWidth());
+    auto line = juce::Line<int>(initialX, 0, initialX + 2, getHeight());
+    g.drawLine(line.toFloat());
+}
+
+void Marker::setPosition(double pos)
+{
+    position = pos;
+    repaint();
+}
+
+/*
+ * FILE NAVIGATOR IMPLEMENTATION
+ */
+FileNavigator::FileNavigator(juce::AudioFormatManager& audioFormatManager):
+    thumbnailComponent(audioFormatManager)
+{
+    addAndMakeVisible(thumbnailComponent);
+    addAndMakeVisible(marker);
+}
+
+void FileNavigator::setSource(juce::File& file)
+{
+    thumbnailComponent.setSource(file);
+}
+
+void FileNavigator::resized()
+{
+    auto bounds = juce::Rectangle<int>(sliderPadding, sliderHeight, getWidth() - sliderPadding * 2, getHeight() - sliderHeight);
+    thumbnailComponent.setBounds(bounds);
+    marker.setBounds(bounds);
+}
+
+void FileNavigator::setPosition(double position) {
+    marker.setPosition(position);
 }
 }

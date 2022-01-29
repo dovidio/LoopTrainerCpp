@@ -6,11 +6,11 @@
 
 namespace LoopTrainer
 {
-class MainComponent : public juce::AudioAppComponent
+class MainComponent : public juce::AudioAppComponent, juce::Timer
 {
 public:
     MainComponent();
-    ~MainComponent();
+    ~MainComponent() override;
 
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
     void releaseResources() override;
@@ -18,8 +18,13 @@ public:
 
     void paint(Graphics&) override;
     void resized() override;
+    
+    void timerCallback() override;
+    void mouseUp(const juce::MouseEvent&) override;
 
 private:
+    
+    int callbackInterval = 40;
 
     Toolbar toolbar;
     FileNavigator fileNavigator;
@@ -29,9 +34,10 @@ private:
     juce::AudioTransportSource audioTransportSource;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
     juce::FlexItem buildButton(juce::Button& button);
     void openFileChooser();
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
 
 } // namespace LoopTrainer

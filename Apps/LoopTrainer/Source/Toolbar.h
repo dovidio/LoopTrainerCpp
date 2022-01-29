@@ -26,6 +26,8 @@ private:
     juce::TextButton playButton;
     juce::TextButton pauseButton;
     juce::FlexItem buildButton(juce::Button& button);
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Toolbar)
 };
 }
 

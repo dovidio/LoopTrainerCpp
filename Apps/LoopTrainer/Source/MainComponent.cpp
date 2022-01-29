@@ -14,11 +14,14 @@ MainComponent::MainComponent()
     toolbar.onPauseButtonClicked = [this] { audioTransportSource.stop(); };
 
     addAndMakeVisible(fileNavigator);
+    fileNavigator.addMouseListener(this, true);
 
     formatManager.registerBasicFormats();
+    
+    startTimer(callbackInterval);
 }
 
-MainComponent::~MainComponent() noexcept
+MainComponent::~MainComponent()
 {
     shutdownAudio();
     audioTransportSource.setSource(nullptr);
@@ -32,7 +35,7 @@ void MainComponent::paint(Graphics& g)
 void MainComponent::resized()
 {
    toolbar.setBounds(juce::Rectangle<int>(0, 0, getWidth(), 40.0f));
-   fileNavigator.setBounds(juce::Rectangle<int>(0, toolbar.getBottom() + 20, getWidth(), 120.0f));
+   fileNavigator.setBounds(juce::Rectangle<int>(0, toolbar.getBottom() + 20, getWidth(), 160.0f));
 }
 
 juce::FlexItem MainComponent::buildButton(juce::Button& button)
@@ -47,9 +50,7 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
 
 void MainComponent::releaseResources()
 {
-
     audioTransportSource.releaseResources();
-    
 }
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
@@ -66,7 +67,7 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 void MainComponent::openFileChooser()
 {
 
-    fileChooser = std::make_unique<juce::FileChooser> ("Please select the moose you want to load...",
+    fileChooser = std::make_unique<juce::FileChooser> ("Please select the file you want to load...",
                                               juce::File{},
                                               "*.wav,*.ogg,*.mp3");
 
@@ -91,4 +92,29 @@ void MainComponent::openFileChooser()
                              });
 
 }
-} // namespace GuiApp
+
+
+void MainComponent::timerCallback()
+{
+    if (audioTransportSource.getTotalLength() > 0)
+    {
+        auto audioLength = audioTransportSource.getLengthInSeconds();
+        auto audioPosition = audioTransportSource.getCurrentPosition();
+        auto progress = audioPosition / audioLength;
+        
+        fileNavigator.setPosition(progress);
+    }
+}
+
+void MainComponent::mouseUp(const juce::MouseEvent& event)
+{
+    if (auto c = dynamic_cast<Marker*>(event.originalComponent))
+    {
+        auto normalisedProgress = ((double) event.x) / (double) c->getBounds().getWidth();
+        auto audioPosition = normalisedProgress * audioTransportSource.getLengthInSeconds();
+        audioTransportSource.setPosition(audioPosition);
+        fileNavigator.setPosition(normalisedProgress);
+    }
+}
+
+}
