@@ -20,6 +20,10 @@ Toolbar::Toolbar()
     addAndMakeVisible(pauseButton);
     pauseButton.setButtonText("Pause");
     pauseButton.onClick = [this] { onPauseButtonClicked(); };
+    
+    addAndMakeVisible(stopButton);
+    stopButton.setButtonText("Stop");
+    stopButton.onClick = [this] { onStopButtonClicked(); };
 }
 
 void Toolbar::resized()
@@ -31,6 +35,7 @@ void Toolbar::resized()
     flexBox.items.add(buildButton(openButton));
     flexBox.items.add(buildButton(playButton));
     flexBox.items.add(buildButton(pauseButton));
+    flexBox.items.add(buildButton(stopButton));
 
     flexBox.performLayout(getLocalBounds());
 }

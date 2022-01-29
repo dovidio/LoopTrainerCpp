@@ -12,6 +12,11 @@ MainComponent::MainComponent()
     toolbar.onOpenButtonClicked = [this] { openFileChooser(); };
     toolbar.onPlayButtonClicked = [this] { audioTransportSource.start(); };
     toolbar.onPauseButtonClicked = [this] { audioTransportSource.stop(); };
+    toolbar.onStopButtonClicked = [this] {
+        audioTransportSource.stop();
+        audioTransportSource.setPosition(0);
+        fileNavigator.setPosition(0);
+    };
 
     addAndMakeVisible(fileNavigator);
     fileNavigator.addMouseListener(this, true);
